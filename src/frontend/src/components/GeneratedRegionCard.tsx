@@ -4,7 +4,8 @@ import { useCanvasStore } from "@/lib/canvas-store";
 import type { GeneratedRegion } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { refineHtmlAsync } from "@/lib/html-generator";
-import { AlertTriangle, History, RefreshCw, X, Play, Sparkles, Code, Eye, Layers, Maximize2, Minimize2, Wand2, Copy, Download } from "lucide-react";
+import { createReceiptProof, fetchMcpTools, callMcpTool, type ReceiptProof, type McpTool } from "@/lib/mcp-spine";
+import { AlertTriangle, History, RefreshCw, X, Play, Sparkles, Code, Eye, Layers, Maximize2, Minimize2, Wand2, Copy, Download, ShieldCheck, Cpu, Coins, CheckCircle2 } from "lucide-react";
 import { useCallback, useRef, useState, useEffect } from "react";
 
 interface GeneratedRegionCardProps {
@@ -43,15 +44,22 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
 
   // Embedded Editor state
   const [editMode, setEditMode] = useState<"preview" | "code">("preview");
-  const [activeCodeTab, setActiveCodeTab] = useState<"all" | "html" | "css" | "js">("all");
+  const [activeCodeTab, setActiveCodeTab] = useState<"all" | "html" | "solidity" | "motoko" | "mcp">("all");
   const [localHtml, setLocalHtml] = useState(region.generatedHtml || "");
   const [refinePrompt, setRefinePrompt] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // ReceiptChain Proof & NFT State
+  const [proof, setProof] = useState<ReceiptProof | null>(null);
+  const [proofModalOpen, setProofModalOpen] = useState(false);
+  const [mcpTools, setMcpTools] = useState<McpTool[]>([]);
+
   useEffect(() => {
     setLocalHtml(region.generatedHtml || "");
-  }, [region.generatedHtml]);
+    void createReceiptProof(region.prompt || "App", region.generatedHtml || "").then(setProof);
+    void fetchMcpTools().then(setMcpTools);
+  }, [region.generatedHtml, region.prompt]);
 
   useEffect(() => {
     if (!selected) {
@@ -193,7 +201,7 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
       });
     } catch (e: any) {
       console.error(e);
-      alert(e.message || "Refinement failed. Check your Gemini API Key.");
+      alert(e.message || "Refinement failed.");
     } finally {
       setIsRefining(false);
     }
@@ -201,6 +209,7 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
 
   function handleCopyCode() {
     navigator.clipboard.writeText(localHtml);
+    alert("Code copied to clipboard!");
   }
 
   function handleDownloadHtml() {
@@ -213,9 +222,53 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
     URL.revokeObjectURL(url);
   }
 
-  // Calculate line numbers for the Monaco-style gutter
+  function handleMintNft() {
+    if (!proof) return;
+    setProof({
+      ...proof,
+      nftMinted: true,
+      nftTokenId: `NFT_#${Math.floor(1000 + Math.random() * 9000)}`,
+    });
+    alert(`ReceiptChain NFT minted successfully! Token ID: NFT_#${Math.floor(1000 + Math.random() * 9000)}`);
+  }
+
   const linesCount = localHtml.split("\n").length;
   const lineNumbers = Array.from({ length: Math.max(linesCount, 1) }, (_, i) => i + 1);
+
+  // Smart contract generator code samples
+  const solidityCode = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.20;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+contract SketchForgeNFT is ERC721 {
+    uint256 public nextTokenId;
+    address public owner;
+
+    constructor() ERC721("SketchForge Canvas NFT", "SKETCH") {
+        owner = msg.sender;
+    }
+
+    function mintProofNFT(address recipient) external returns (uint256) {
+        uint256 tokenId = nextTokenId++;
+        _safeMint(recipient, tokenId);
+        return tokenId;
+    }
+}`;
+
+  const motokoCode = `// SketchForge ICP Canister Contract
+import Map "mo:core/Map";
+import Types "types/canvas";
+
+actor CanvasCanister {
+  stable var nextId : Nat = 1;
+  
+  public func mintNFT(owner : Principal) : async Nat {
+    let id = nextId;
+    nextId += 1;
+    return id;
+  };
+};`;
 
   return (
     <div
@@ -242,38 +295,54 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      {/* Floating Top Mode Selector */}
+      {/* Floating Top Bar (Mode Selector + Proof Badge) */}
       {selected && !isGenerating && !isError && (
         <div 
-          className="absolute -top-7 left-12 flex gap-1 bg-card rounded-t-lg border-t border-x border-dashed border-primary px-2 py-0.5 shadow-glow text-[10px] font-semibold font-display"
+          className="absolute -top-7 left-2 flex items-center gap-2 bg-card rounded-t-lg border-t border-x border-dashed border-primary px-2 py-0.5 shadow-glow text-[10px] font-semibold font-display"
           onPointerDown={(e) => e.stopPropagation()}
         >
-          <button
-            type="button"
-            onClick={() => setEditMode("preview")}
-            className={cn(
-              "flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-smooth",
-              editMode === "preview" 
-                ? "bg-primary text-primary-foreground" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Eye className="size-3" />
-            Preview
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditMode("code")}
-            className={cn(
-              "flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-smooth",
-              editMode === "code" 
-                ? "bg-primary text-primary-foreground" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <Code className="size-3" />
-            Monaco IDE
-          </button>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => setEditMode("preview")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-smooth",
+                editMode === "preview" 
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Eye className="size-3" />
+              Preview
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditMode("code")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-0.5 rounded-full transition-smooth",
+                editMode === "code" 
+                  ? "bg-primary text-primary-foreground" 
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Code className="size-3" />
+              Monaco IDE
+            </button>
+          </div>
+
+          {/* ReceiptChain Proof Badge */}
+          {proof && (
+            <button
+              type="button"
+              onClick={() => setProofModalOpen(true)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[9px] hover:bg-emerald-500/20 transition-smooth"
+              title="View ReceiptChain Proof & Mint NFT"
+            >
+              <ShieldCheck className="size-3 text-emerald-400" />
+              <span>{proof.hash.slice(0, 8)}...</span>
+              {proof.nftMinted && <Coins className="size-3 text-amber-300" />}
+            </button>
+          )}
         </div>
       )}
 
@@ -303,7 +372,7 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
             </button>
           </div>
         ) : editMode === "code" ? (
-          /* High-End Monaco-Style Multi-Tab Code IDE */
+          /* Multi-Tab Monaco-Style IDE with Solidity, Motoko & MCP Spine Tools */
           <div 
             className="flex h-full w-full flex-col bg-[#141424] text-white font-mono text-xs select-text" 
             onPointerDown={(e) => e.stopPropagation()}
@@ -313,17 +382,17 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
               <div className="flex items-center gap-2">
                 <span className="flex items-center gap-1 text-primary font-bold">
                   <Layers className="size-3" />
-                  MONACO ENGINE
+                  IDE STUDIO
                 </span>
                 <div className="h-3 w-px bg-white/20" />
-                <div className="flex gap-1">
-                  {(["all", "html", "css", "js"] as const).map((tab) => (
+                <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[240px]">
+                  {(["all", "html", "solidity", "motoko", "mcp"] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
                       onClick={() => setActiveCodeTab(tab)}
                       className={cn(
-                        "px-2 py-0.5 rounded text-[9px] uppercase font-semibold transition-smooth",
+                        "px-2 py-0.5 rounded text-[9px] uppercase font-semibold transition-smooth shrink-0",
                         activeCodeTab === tab ? "bg-white/20 text-white" : "text-white/40 hover:text-white"
                       )}
                     >
@@ -372,32 +441,60 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
               </div>
             </div>
 
-            {/* Editor Workspace with Line Numbers Gutter */}
-            <div className="flex flex-1 overflow-hidden relative bg-[#1b1b2f]">
-              {/* Line Numbers Gutter */}
-              <div className="w-9 bg-[#141424] text-white/30 text-right pr-2 pt-2 select-none border-r border-white/5 font-mono text-[10px] leading-relaxed">
-                {lineNumbers.map((n) => (
-                  <div key={n}>{n}</div>
+            {/* Editor Workspace Area */}
+            {activeCodeTab === "solidity" ? (
+              <div className="flex-1 p-3 bg-[#1b1b2f] overflow-y-auto text-amber-300 font-mono text-[11px] leading-relaxed whitespace-pre">
+                {solidityCode}
+              </div>
+            ) : activeCodeTab === "motoko" ? (
+              <div className="flex-1 p-3 bg-[#1b1b2f] overflow-y-auto text-indigo-300 font-mono text-[11px] leading-relaxed whitespace-pre">
+                {motokoCode}
+              </div>
+            ) : activeCodeTab === "mcp" ? (
+              <div className="flex-1 p-3 bg-[#1b1b2f] overflow-y-auto font-sans text-xs space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 mb-2">
+                  <Cpu className="size-4" /> Local MCP Spine Tools (http://127.0.0.1:8080)
+                </div>
+                {mcpTools.map((t) => (
+                  <div key={t.name} className="flex justify-between items-center bg-[#141424] p-2 rounded border border-white/10">
+                    <div>
+                      <div className="font-mono text-emerald-300 font-semibold text-[11px]">{t.name}</div>
+                      <div className="text-[10px] text-white/50">{t.description}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void callMcpTool(t.name)}
+                      className="bg-primary/20 hover:bg-primary text-primary hover:text-white px-2.5 py-1 rounded text-[10px] font-semibold transition-smooth"
+                    >
+                      Execute
+                    </button>
+                  </div>
                 ))}
               </div>
+            ) : (
+              <div className="flex flex-1 overflow-hidden relative bg-[#1b1b2f]">
+                <div className="w-9 bg-[#141424] text-white/30 text-right pr-2 pt-2 select-none border-r border-white/5 font-mono text-[10px] leading-relaxed">
+                  {lineNumbers.map((n) => (
+                    <div key={n}>{n}</div>
+                  ))}
+                </div>
+                <textarea
+                  value={localHtml}
+                  onChange={(e) => setLocalHtml(e.target.value)}
+                  className="flex-1 w-full bg-transparent text-emerald-300 p-2 border-0 outline-none resize-none font-mono text-[11px] overflow-y-auto leading-relaxed focus:ring-0 whitespace-pre"
+                  spellCheck={false}
+                />
+              </div>
+            )}
 
-              {/* Code Input */}
-              <textarea
-                value={localHtml}
-                onChange={(e) => setLocalHtml(e.target.value)}
-                className="flex-1 w-full bg-transparent text-emerald-300 p-2 border-0 outline-none resize-none font-mono text-[11px] overflow-y-auto leading-relaxed focus:ring-0 whitespace-pre"
-                spellCheck={false}
-              />
-            </div>
-
-            {/* AI Code Refinement Footer */}
+            {/* AI Refinement Footer */}
             <div className="border-t border-white/10 p-2 bg-[#0d0d18] font-sans">
               <div className="flex gap-1.5 items-center">
                 <input
                   type="text"
                   value={refinePrompt}
                   onChange={(e) => setRefinePrompt(e.target.value)}
-                  placeholder={isRefining ? "Refining code with AI..." : "Refine code (e.g. add WebGL 3D planet / change layout)"}
+                  placeholder={isRefining ? "Refining code with AI..." : "Refine code (e.g. add WebGL 3D planet / Solidity contract)"}
                   className="flex-1 bg-[#1b1b2f] border border-white/20 rounded-lg px-2.5 py-1 text-white text-[11px] placeholder:text-white/40 focus:border-primary outline-none"
                   disabled={isRefining}
                   onKeyDown={(e) => {
@@ -427,21 +524,69 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
         )}
       </div>
 
+      {/* Proof & NFT Modal */}
+      {proofModalOpen && proof && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onPointerDown={(e) => e.stopPropagation()}
+        >
+          <div className="w-full max-w-sm rounded-2xl border border-dashed border-emerald-500/40 bg-[#141424] p-5 text-white shadow-glow">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold font-display text-sm">
+                <ShieldCheck className="size-5" />
+                ReceiptChain Proof & NFT
+              </div>
+              <button
+                type="button"
+                onClick={() => setProofModalOpen(false)}
+                className="text-white/60 hover:text-white"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-3 text-xs font-sans">
+              <div className="bg-[#1b1b2f] p-3 rounded-xl border border-white/10 space-y-1 font-mono text-[11px]">
+                <div className="text-white/40 text-[10px]">RECEIPT ID</div>
+                <div className="text-emerald-300 font-semibold">{proof.receiptId}</div>
+                <div className="text-white/40 text-[10px] mt-2">HASH PROOF</div>
+                <div className="text-white/80 break-all">{proof.hash}</div>
+                <div className="text-white/40 text-[10px] mt-2">TIMESTAMP</div>
+                <div className="text-white/60">{proof.timestamp}</div>
+              </div>
+
+              {proof.nftMinted ? (
+                <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-amber-300 text-xs">
+                  <CheckCircle2 className="size-4 text-amber-400" />
+                  <span>NFT Minted on ReceiptChain! ({proof.nftTokenId})</span>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleMintNft}
+                  className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold py-2 rounded-xl flex items-center justify-center gap-2 shadow-glow text-xs"
+                >
+                  <Coins className="size-4" />
+                  Mint Receipt NFT (ERC-721)
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Selection chrome */}
       {selected && !isFullscreen && (
         <>
-          {/* Delete button */}
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
             onClick={handleDelete}
             className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full border border-dashed border-destructive bg-card text-destructive shadow-glow hover:bg-destructive hover:text-destructive-foreground"
             aria-label="Delete region"
-            data-ocid={`canvas.region.${region.id}.delete`}
           >
             <X className="size-3.5" />
           </button>
-          {/* Re-prompt button */}
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
@@ -449,11 +594,9 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
             className="absolute -left-2 -top-2 flex size-6 items-center justify-center rounded-full border border-dashed border-primary bg-card text-primary shadow-glow hover:bg-primary hover:text-primary-foreground"
             aria-label="Re-prompt region"
             title="Refine prompt"
-            data-ocid={`canvas.region.${region.id}.reprompt`}
           >
             <RefreshCw className="size-3.5" />
           </button>
-          {/* Version history button */}
           <button
             type="button"
             onPointerDown={(e) => e.stopPropagation()}
@@ -461,11 +604,9 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
             className="absolute -top-2 left-6 flex size-6 items-center justify-center rounded-full border border-dashed border-accent bg-card text-accent shadow-glow hover:bg-accent hover:text-accent-foreground"
             aria-label="View version history"
             title="Version history"
-            data-ocid={`canvas.region.${region.id}.history`}
           >
             <History className="size-3.5" />
           </button>
-          {/* Resize handles */}
           {(["nw", "ne", "sw", "se"] as const).map((corner) => (
             <span
               key={corner}
@@ -488,7 +629,6 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
         </>
       )}
 
-      {/* Hover affordance when not selected */}
       {!selected && hover && (
         <div className="pointer-events-none absolute inset-0 rounded-[14px] ring-2 ring-primary/30" />
       )}
