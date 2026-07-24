@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.mops/
+.old/
+.platform/
+.pnpm-store/
+.cache/
+.env.local
+*.local
+.env
+

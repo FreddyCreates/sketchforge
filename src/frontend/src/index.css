@@ -1,0 +1,395 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Space Grotesk";
+  src: url("/assets/fonts/SpaceGrotesk.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 300 700;
+}
+
+@font-face {
+  font-family: "DM Sans";
+  src: url("/assets/fonts/DMSans.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 100 1000;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/assets/fonts/JetBrainsMono.woff2") format("woff2");
+  font-display: swap;
+  font-weight: 100 800;
+}
+
+@layer base {
+  :root {
+    --font-display: "Space Grotesk";
+    --font-body: "DM Sans";
+    --font-mono: "JetBrains Mono";
+    --radius: 0.625rem;
+
+    /* Sketchpad Studio — light mode (primary) */
+    --background: 0.99 0.003 95;
+    --foreground: 0.18 0.01 280;
+    --card: 1.0 0 0;
+    --card-foreground: 0.18 0.01 280;
+    --popover: 1.0 0 0;
+    --popover-foreground: 0.18 0.01 280;
+
+    --primary: 0.62 0.22 285;
+    --primary-foreground: 0.99 0.005 285;
+
+    --secondary: 0.96 0.005 280;
+    --secondary-foreground: 0.25 0.01 280;
+    --muted: 0.95 0.004 280;
+    --muted-foreground: 0.5 0.01 280;
+
+    --accent: 0.7 0.17 45;
+    --accent-foreground: 0.18 0.02 45;
+
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.98 0.005 25;
+
+    --success: 0.6 0.16 150;
+    --warning: 0.72 0.15 85;
+
+    --border: 0.86 0.008 280;
+    --input: 0.9 0.006 280;
+    --ring: 0.62 0.22 285;
+
+    --chart-1: 0.62 0.22 285;
+    --chart-2: 0.7 0.17 45;
+    --chart-3: 0.6 0.16 150;
+    --chart-4: 0.55 0.2 350;
+    --chart-5: 0.7 0.15 195;
+
+    --sidebar: 0.98 0.004 280;
+    --sidebar-foreground: 0.18 0.01 280;
+    --sidebar-primary: 0.62 0.22 285;
+    --sidebar-primary-foreground: 0.99 0.005 285;
+    --sidebar-accent: 0.95 0.004 280;
+    --sidebar-accent-foreground: 0.25 0.01 280;
+    --sidebar-border: 0.86 0.008 280;
+    --sidebar-ring: 0.62 0.22 285;
+
+    /* Sketch-specific tokens */
+    --sketch-ink: 0.2 0.01 280;
+    --sketch-paper: 0.97 0.006 90;
+    --glow-primary: 0.62 0.22 285;
+    --gradient-primary: linear-gradient(
+      135deg,
+      oklch(0.62 0.22 285),
+      oklch(0.58 0.24 320)
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      oklch(0.99 0.003 95),
+      oklch(0.96 0.006 280)
+    );
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Collaboration presence — color-coded collaborator hues */
+    --presence-1: 0.62 0.22 285;
+    --presence-2: 0.7 0.17 45;
+    --presence-3: 0.6 0.16 150;
+    --presence-4: 0.55 0.2 350;
+    --presence-5: 0.7 0.15 195;
+
+    /* Panel scrim overlay for slide-in drawers */
+    --panel-overlay: 0.18 0.01 280;
+  }
+
+  .dark {
+    --background: 0.145 0.008 280;
+    --foreground: 0.95 0.005 280;
+    --card: 0.18 0.01 280;
+    --card-foreground: 0.95 0.005 280;
+    --popover: 0.2 0.012 280;
+    --popover-foreground: 0.95 0.005 280;
+
+    --primary: 0.68 0.22 285;
+    --primary-foreground: 0.145 0.008 285;
+
+    --secondary: 0.22 0.012 280;
+    --secondary-foreground: 0.85 0.005 280;
+    --muted: 0.22 0.01 280;
+    --muted-foreground: 0.55 0.008 280;
+
+    --accent: 0.72 0.16 45;
+    --accent-foreground: 0.145 0.01 45;
+
+    --destructive: 0.6 0.2 25;
+    --destructive-foreground: 0.95 0.005 25;
+
+    --success: 0.62 0.16 150;
+    --warning: 0.75 0.15 85;
+
+    --border: 0.28 0.012 280;
+    --input: 0.28 0.012 280;
+    --ring: 0.68 0.22 285;
+
+    --chart-1: 0.68 0.22 285;
+    --chart-2: 0.72 0.16 45;
+    --chart-3: 0.62 0.16 150;
+    --chart-4: 0.6 0.2 350;
+    --chart-5: 0.7 0.15 195;
+
+    --sidebar: 0.17 0.01 280;
+    --sidebar-foreground: 0.95 0.005 280;
+    --sidebar-primary: 0.68 0.22 285;
+    --sidebar-primary-foreground: 0.145 0.008 285;
+    --sidebar-accent: 0.22 0.012 280;
+    --sidebar-accent-foreground: 0.85 0.005 280;
+    --sidebar-border: 0.28 0.012 280;
+    --sidebar-ring: 0.68 0.22 285;
+
+    --sketch-ink: 0.9 0.005 280;
+    --sketch-paper: 0.2 0.01 280;
+    --glow-primary: 0.68 0.22 285;
+    --gradient-primary: linear-gradient(
+      135deg,
+      oklch(0.68 0.22 285),
+      oklch(0.62 0.24 320)
+    );
+    --gradient-subtle: linear-gradient(
+      180deg,
+      oklch(0.145 0.008 280),
+      oklch(0.18 0.01 280)
+    );
+
+    /* Collaboration presence — dark mode (brighter for contrast on dark) */
+    --presence-1: 0.68 0.22 285;
+    --presence-2: 0.72 0.16 45;
+    --presence-3: 0.62 0.16 150;
+    --presence-4: 0.6 0.2 350;
+    --presence-5: 0.7 0.15 195;
+
+    --panel-overlay: 0.05 0.005 280;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+}
+
+@layer utilities {
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  /* Sketchy hand-drawn border treatment for canvas regions and cards */
+  .sketch-border {
+    border: 1.5px dashed oklch(var(--sketch-ink) / 0.55);
+    border-radius: 14px;
+    background-image: none;
+  }
+
+  /* Rough hand-drawn feel using SVG turbulence filter — applied to drawn elements */
+  .sketch-rough {
+    filter: url(#rough-paper);
+  }
+
+  /* Glowing primary action — the AI "Generate" button */
+  .glow-primary {
+    box-shadow: 0 0 0 1px oklch(var(--glow-primary) / 0.3), 0 4px 18px -2px
+      oklch(var(--glow-primary) / 0.45), 0 0 28px -4px
+      oklch(var(--glow-primary) / 0.5);
+  }
+
+  .glow-primary-lg {
+    box-shadow: 0 0 0 1px oklch(var(--glow-primary) / 0.35), 0 8px 28px -4px
+      oklch(var(--glow-primary) / 0.55), 0 0 44px -6px
+      oklch(var(--glow-primary) / 0.6);
+  }
+
+  .bg-gradient-primary {
+    background-image: var(--gradient-primary);
+  }
+
+  .bg-gradient-subtle {
+    background-image: var(--gradient-subtle);
+  }
+
+  /* Paper texture for the canvas surface */
+  .bg-paper {
+    background-color: oklch(var(--sketch-paper));
+  }
+
+  /* === Collaboration presence === */
+
+  /* Avatar chip — small color-coded circle in the header roster */
+  .avatar-chip {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 9999px;
+    border: 1.5px solid oklch(var(--card) / 0.9);
+    box-shadow: 0 0 0 1.5px oklch(var(--presence) / 0.55), 0 1px 3px
+      oklch(var(--presence) / 0.25);
+    color: oklch(var(--card));
+    background-color: oklch(var(--presence));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.7rem;
+    line-height: 1;
+  }
+
+  /* Online dot indicator on avatar chip */
+  .avatar-online {
+    box-shadow: 0 0 0 1.5px oklch(var(--card)), 0 0 0 2.5px
+      oklch(var(--success) / 0.7);
+  }
+
+  /* Live cursor label — name + active tool, rendered on the canvas */
+  .cursor-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    border: 1.5px dashed oklch(var(--presence) / 0.7);
+    background-color: oklch(var(--card));
+    color: oklch(var(--presence));
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px oklch(var(--presence) / 0.25);
+    animation: cursor-pulse 1.6s ease-in-out infinite;
+  }
+
+  /* Cursor arrowhead tinted with collaborator presence color */
+  .cursor-arrow {
+    fill: oklch(var(--presence));
+    stroke: oklch(var(--card));
+    stroke-width: 1;
+  }
+
+  /* === Template library panel === */
+
+  /* Slide-in panel scrim overlay */
+  .panel-overlay {
+    background-color: oklch(var(--panel-overlay) / 0.35);
+    backdrop-filter: blur(2px);
+  }
+
+  /* Template card in the library grid */
+  .template-card {
+    border: 1.5px dashed oklch(var(--sketch-ink) / 0.5);
+    border-radius: 12px;
+    background-color: oklch(var(--card));
+    box-shadow: 2px 3px 0 0 oklch(var(--sketch-ink) / 0.1);
+    transition: var(--transition-smooth);
+  }
+  .template-card:hover {
+    border-color: oklch(var(--primary) / 0.6);
+    box-shadow: 2px 3px 0 0 oklch(var(--primary) / 0.25), 0 0 0 1px
+      oklch(var(--primary) / 0.2);
+    transform: translateY(-1px);
+  }
+
+  /* Category tag pill on a template card */
+  .template-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.0625rem 0.5rem;
+    border-radius: 9999px;
+    background-color: oklch(var(--secondary));
+    color: oklch(var(--secondary-foreground));
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* === Version history panel === */
+
+  /* A single version row in the history drawer */
+  .version-row {
+    border: 1.5px dashed oklch(var(--sketch-ink) / 0.4);
+    border-radius: 10px;
+    background-color: oklch(var(--card));
+    transition: var(--transition-smooth);
+  }
+  .version-row:hover {
+    border-color: oklch(var(--primary) / 0.5);
+    box-shadow: 0 0 0 1px oklch(var(--primary) / 0.15);
+  }
+
+  /* Version preview thumbnail — scaled render of prior generatedHtml */
+  .version-preview {
+    border: 1px solid oklch(var(--border));
+    border-radius: 6px;
+    background-color: oklch(var(--muted) / 0.5);
+    overflow: hidden;
+  }
+
+  /* === Export HTML button === */
+
+  /* Secondary pill button with download affordance — clean chrome, no glow */
+  .export-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.375rem 0.875rem;
+    border-radius: 9999px;
+    border: 1.5px solid oklch(var(--sketch-ink) / 0.35);
+    background-color: oklch(var(--card));
+    color: oklch(var(--foreground));
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: var(--transition-smooth);
+  }
+  .export-pill:hover {
+    border-color: oklch(var(--primary) / 0.6);
+    color: oklch(var(--primary));
+    box-shadow: 0 0 0 1px oklch(var(--primary) / 0.2);
+  }
+
+  @keyframes cursor-pulse {
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    50% {
+      transform: translateY(-1px);
+      opacity: 0.85;
+    }
+  }
+
+  @keyframes panel-slide-in-left {
+    from {
+      transform: translateX(-100%);
+      opacity: 0.4;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes panel-slide-in-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0.4;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-panel-slide-left {
+    animation: panel-slide-in-left 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .animate-panel-slide-right {
+    animation: panel-slide-in-right 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+}

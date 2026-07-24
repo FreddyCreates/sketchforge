@@ -1,0 +1,19 @@
+{
+  "overview": "A sketchy-aesthetic web canvas where you circle a region, describe it, and the AI generates and renders live code — now with real-time collaboration, HTML export, region version history, and a template library.",
+  "features": [
+    "Real-time multi-user collaboration with live cursors and presence",
+    "Full-page HTML export of the canvas",
+    "Version history for AI-generated regions",
+    "Drop-in template library the AI reasons from"
+  ],
+  "category": "productivity",
+  "tags": [
+    "canvas",
+    "ai-generation",
+    "collaboration",
+    "export",
+    "version-history",
+    "templates"
+  ],
+  "last_updated": "2026-07-23T16:56:05.169Z"
+}
