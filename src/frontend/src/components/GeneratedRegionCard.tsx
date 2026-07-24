@@ -4,7 +4,7 @@ import { useCanvasStore } from "@/lib/canvas-store";
 import type { GeneratedRegion } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { refineHtmlAsync } from "@/lib/html-generator";
-import { AlertTriangle, History, RefreshCw, X, Play, Sparkles, Code, Eye, Layers, Maximize2, Minimize2, Wand2 } from "lucide-react";
+import { AlertTriangle, History, RefreshCw, X, Play, Sparkles, Code, Eye, Layers, Maximize2, Minimize2, Wand2, Copy, Download } from "lucide-react";
 import { useCallback, useRef, useState, useEffect } from "react";
 
 interface GeneratedRegionCardProps {
@@ -199,6 +199,20 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
     }
   }
 
+  function handleCopyCode() {
+    navigator.clipboard.writeText(localHtml);
+  }
+
+  function handleDownloadHtml() {
+    const blob = new Blob([localHtml], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `sketchforge-app-${region.id}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   // Calculate line numbers for the Monaco-style gutter
   const linesCount = localHtml.split("\n").length;
   const lineNumbers = Array.from({ length: Math.max(linesCount, 1) }, (_, i) => i + 1);
@@ -323,6 +337,22 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
                 <span className="text-[9px] text-white/40 tabular-nums">
                   {linesCount} L | {localHtml.length} C
                 </span>
+                <button
+                  type="button"
+                  onClick={handleCopyCode}
+                  className="p-1 text-white/60 hover:text-white transition-smooth"
+                  title="Copy Code to Clipboard"
+                >
+                  <Copy className="size-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadHtml}
+                  className="p-1 text-white/60 hover:text-white transition-smooth"
+                  title="Download HTML File"
+                >
+                  <Download className="size-3" />
+                </button>
                 <button
                   type="button"
                   onClick={() => setIsFullscreen(!isFullscreen)}

@@ -198,6 +198,28 @@ export function AIChatBotPanel() {
         <div ref={chatEndRef} />
       </div>
 
+      {/* Quick Action Chips */}
+      <div className="flex gap-1.5 overflow-x-auto px-3 py-1.5 bg-card border-t border-border/40 text-[10px] no-scrollbar">
+        {[
+          { label: "🚀 3D WebGL Galaxy", prompt: "Build an interactive 3D WebGL rotating particle galaxy scene using Three.js" },
+          { label: "📊 Analytics Dashboard", prompt: "Build a real-time crypto analytics dashboard with Chart.js line charts and stats" },
+          { label: "⚡ SaaS Landing Page", prompt: "Build a modern SaaS landing page with dark theme hero section and feature cards" },
+          { label: "🎮 Physics Canvas Game", prompt: "Build an interactive HTML5 canvas bouncing balls physics game with gravity" },
+        ].map((chip) => (
+          <button
+            key={chip.label}
+            type="button"
+            disabled={loading}
+            onClick={() => {
+              setInput(chip.prompt);
+            }}
+            className="shrink-0 bg-primary/10 hover:bg-primary hover:text-primary-foreground text-primary px-2.5 py-1 rounded-full border border-dashed border-primary/30 transition-smooth font-medium disabled:opacity-50"
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
       {/* Input Bar */}
       <div className="border-t border-border/80 bg-card p-3">
         <form
