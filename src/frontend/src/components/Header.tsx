@@ -8,7 +8,7 @@ import { GeminiSettingsModal } from "./GeminiSettingsModal";
 /**
  * SketchForge — top app header.
  */
-import { Check, Loader2, Redo2, Undo2, X, Settings } from "lucide-react";
+import { Check, Loader2, Redo2, Undo2, X, Settings, Bot } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function ThinkingIndicator() {
@@ -124,6 +124,7 @@ export function Header({
   exportButton,
 }: HeaderProps) {
   const isGenerating = useCanvasStore((s) => s.isGenerating);
+  const toggleAIChat = useCanvasStore((s) => s.toggleAIChat);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -143,6 +144,17 @@ export function Header({
           aria-label="Gemini AI Settings"
         >
           <Settings className="size-4" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 rounded-full border border-dashed border-primary/60 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-smooth flex items-center gap-1.5 px-3 text-xs font-semibold"
+          onClick={toggleAIChat}
+          title="Open AI Assistant"
+        >
+          <Bot className="size-3.5" />
+          AI Assistant
         </Button>
       </div>
 

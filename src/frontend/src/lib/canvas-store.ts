@@ -54,6 +54,12 @@ export interface CanvasState {
   // every collaborator in a session has a stable color-coded hue.
   myPresenceColor: string;
 
+  // --- AI Chatbot Assistant panel ---
+  aiChatOpen: boolean;
+  toggleAIChat: () => void;
+  openAIChat: () => void;
+  closeAIChat: () => void;
+
   // --- Actions ---
   setTool: (tool: CanvasTool) => void;
   setColor: (color: string) => void;
@@ -115,6 +121,11 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   versionHistoryOpen: false,
   versionHistoryRegionId: null,
   myPresenceColor: MY_PRESENCE_COLOR,
+  aiChatOpen: false,
+
+  toggleAIChat: () => set((s) => ({ aiChatOpen: !s.aiChatOpen })),
+  openAIChat: () => set({ aiChatOpen: true }),
+  closeAIChat: () => set({ aiChatOpen: false }),
 
   setTool: (tool) => set({ activeTool: tool }),
   setColor: (color) => set({ activeColor: color }),

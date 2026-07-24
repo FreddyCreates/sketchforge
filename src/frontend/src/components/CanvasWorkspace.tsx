@@ -1,3 +1,4 @@
+import { AIChatBotPanel } from "@/components/AIChatBotPanel";
 import { CommentPanel } from "@/components/CommentPanel";
 import { CommentPin } from "@/components/CommentPin";
 import { DrawingCanvas } from "@/components/DrawingCanvas";
@@ -336,6 +337,9 @@ export function CanvasWorkspace() {
 
       {/* Template library panel — slide-in drawer controlled by the store. */}
       <TemplateLibraryPanel />
+
+      {/* AI Chatbot Assistant panel — slide-in side drawer. */}
+      <AIChatBotPanel />
     </div>
   );
 }
