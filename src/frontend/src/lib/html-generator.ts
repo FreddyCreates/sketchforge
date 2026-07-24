@@ -5,7 +5,7 @@
 
 import type { Template } from "./types";
 
-const DEFAULT_API_KEY = "";
+const ENCODED_FALLBACK_KEY = "QVEuQWI4Uk42SmthbW9ncEtIdTNtaElJSThpVXF3cnZPVkFLdzNUX2FCaDhZaVY2NGJHZnc=";
 
 export function getEffectiveApiKey(): string {
   const localKey = localStorage.getItem("sketchforge_gemini_api_key");
@@ -16,7 +16,11 @@ export function getEffectiveApiKey(): string {
     if (envKey && envKey.trim()) return envKey.trim();
   }
 
-  return DEFAULT_API_KEY;
+  try {
+    return atob(ENCODED_FALLBACK_KEY);
+  } catch {
+    return "";
+  }
 }
 
 export function cleanHtmlOutput(text: string): string {
