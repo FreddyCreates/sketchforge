@@ -5,7 +5,8 @@ import { useProject, useUpdateProjectName } from "@/hooks/use-canvas-data";
 import { useCanvasStore } from "@/lib/canvas-store";
 import { cn } from "@/lib/utils";
 import { GeminiSettingsModal } from "./GeminiSettingsModal";
-import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers } from "lucide-react";
+import { WSLTerminalStudio } from "./WSLTerminalStudio";
+import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function ThinkingIndicator() {
@@ -118,6 +119,7 @@ export function Header({
   const isGenerating = useCanvasStore((s) => s.isGenerating);
   const toggleAIChat = useCanvasStore((s) => s.toggleAIChat);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [wslOpen, setWslOpen] = useState(false);
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border/80 bg-card/80 px-4 backdrop-blur-md z-40 relative">
@@ -146,6 +148,18 @@ export function Header({
           <Bot className="size-3.5" />
           <span>AI Assistant</span>
           <Sparkles className="size-3 text-amber-400" />
+        </Button>
+
+        {/* WSL Terminal Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 rounded-full border border-dashed border-emerald-500/60 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all flex items-center gap-1.5 px-3 text-xs font-semibold shadow-sm"
+          onClick={() => setWslOpen(true)}
+          title="Launch WSL Terminal Studio"
+        >
+          <Terminal className="size-3.5" />
+          <span>WSL Terminal</span>
         </Button>
 
         <Button
@@ -193,6 +207,7 @@ export function Header({
       </div>
 
       <GeminiSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <WSLTerminalStudio open={wslOpen} onClose={() => setWslOpen(false)} />
     </header>
   );
 }
