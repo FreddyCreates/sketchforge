@@ -87,8 +87,8 @@ async function callGeminiApi(
   try {
     return await fetchGeminiWithModel("gemini-2.5-flash", systemPrompt, userPrompt, apiKey);
   } catch (err) {
-    console.warn("Gemini 2.5 Flash failed, retrying with Gemini 1.5 Flash", err);
-    return await fetchGeminiWithModel("gemini-1.5-flash", systemPrompt, userPrompt, apiKey);
+    console.warn("Gemini 2.5 Flash failed, retrying with Gemini 2.5 Pro", err);
+    return await fetchGeminiWithModel("gemini-2.5-pro", systemPrompt, userPrompt, apiKey);
   }
 }
 

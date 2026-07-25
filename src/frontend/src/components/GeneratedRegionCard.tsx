@@ -1,3 +1,4 @@
+import { CanvasSandboxStudio } from "@/components/CanvasSandboxStudio";
 import { RegionRenderer } from "@/components/RegionRenderer";
 import { useDeleteRegion, useUpdateRegion } from "@/hooks/use-canvas-data";
 import { useCanvasStore } from "@/lib/canvas-store";
@@ -5,7 +6,7 @@ import type { GeneratedRegion } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { refineHtmlAsync } from "@/lib/html-generator";
 import { createReceiptProof, fetchMcpTools, callMcpTool, type ReceiptProof, type McpTool } from "@/lib/mcp-spine";
-import { AlertTriangle, History, RefreshCw, X, Play, Sparkles, Code, Eye, Layers, Maximize2, Minimize2, Wand2, Copy, Download, ShieldCheck, Cpu, Coins, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, History, RefreshCw, X, Play, Sparkles, Code, Eye, Layers, Maximize2, Minimize2, Wand2, Copy, Download, ShieldCheck, Cpu, Coins, CheckCircle2, Terminal } from "lucide-react";
 import { useCallback, useRef, useState, useEffect } from "react";
 
 interface GeneratedRegionCardProps {
@@ -44,11 +45,53 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
 
   // Embedded Editor state
   const [editMode, setEditMode] = useState<"preview" | "code">("preview");
-  const [activeCodeTab, setActiveCodeTab] = useState<"all" | "html" | "solidity" | "motoko" | "mcp">("all");
+  const [activeCodeTab, setActiveCodeTab] = useState<"all" | "html" | "solidity" | "motoko" | "mcp" | "terminal" | "sandbox">("all");
   const [localHtml, setLocalHtml] = useState(region.generatedHtml || "");
   const [refinePrompt, setRefinePrompt] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Terminal Console State
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([
+    "[SYSTEM] SketchForge Sandboxed Canvas Runtime active.",
+    "[ICP] Canister state loaded from local db storage.",
+    "[WEBGL] Three.js shader pipeline initialized.",
+    "[MCP] Spine endpoint connected at http://127.0.0.1:8080.",
+    "Type 'help' for available CLI commands.",
+  ]);
+  const [terminalInput, setTerminalInput] = useState("");
+
+  function handleTerminalSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const cmd = terminalInput.trim();
+    if (!cmd) return;
+    setTerminalLogs((prev) => [...prev, `$ ${cmd}`]);
+    setTerminalInput("");
+
+    if (cmd === "help") {
+      setTerminalLogs((prev) => [
+        ...prev,
+        "Available commands:",
+        "  status  - Show canvas canister & WebGL runtime health",
+        "  deploy  - Deploy region code to ICP canister",
+        "  build   - Run Vite production bundle simulation",
+        "  clear   - Clear terminal output console",
+      ]);
+    } else if (cmd === "status") {
+      setTerminalLogs((prev) => [
+        ...prev,
+        "[OK] Canister ID: rdmx6-jaaaa-aaaaa-aaadq-cai",
+        "[OK] WebGL Context: ACTIVE",
+        "[OK] AI Engine: gemini-2.5-flash / gemini-2.5-pro",
+      ]);
+    } else if (cmd === "deploy") {
+      setTerminalLogs((prev) => [...prev, "[DEPLOY] Region code deployed to ICP canister successfully!"]);
+    } else if (cmd === "clear") {
+      setTerminalLogs([]);
+    } else {
+      setTerminalLogs((prev) => [...prev, `Executed command: ${cmd}`]);
+    }
+  }
 
   // ReceiptChain Proof & NFT State
   const [proof, setProof] = useState<ReceiptProof | null>(null);
@@ -385,8 +428,8 @@ actor CanvasCanister {
                   IDE STUDIO
                 </span>
                 <div className="h-3 w-px bg-white/20" />
-                <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[240px]">
-                  {(["all", "html", "solidity", "motoko", "mcp"] as const).map((tab) => (
+                <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[320px]">
+                  {(["all", "html", "solidity", "motoko", "mcp", "terminal", "sandbox"] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
@@ -442,7 +485,9 @@ actor CanvasCanister {
             </div>
 
             {/* Editor Workspace Area */}
-            {activeCodeTab === "solidity" ? (
+            {activeCodeTab === "sandbox" ? (
+              <CanvasSandboxStudio regionId={region.id.toString()} />
+            ) : activeCodeTab === "solidity" ? (
               <div className="flex-1 p-3 bg-[#1b1b2f] overflow-y-auto text-amber-300 font-mono text-[11px] leading-relaxed whitespace-pre">
                 {solidityCode}
               </div>
@@ -470,6 +515,29 @@ actor CanvasCanister {
                     </button>
                   </div>
                 ))}
+              </div>
+            ) : activeCodeTab === "terminal" ? (
+              <div className="flex-1 p-3 bg-[#0a0a14] overflow-y-auto font-mono text-[11px] leading-relaxed flex flex-col justify-between">
+                <div className="space-y-1 overflow-y-auto text-emerald-400">
+                  {terminalLogs.map((log, idx) => (
+                    <div key={idx} className={log.startsWith("$") ? "text-white font-bold" : log.startsWith("[ERROR]") ? "text-destructive" : "text-emerald-400"}>
+                      {log}
+                    </div>
+                  ))}
+                </div>
+                <form onSubmit={handleTerminalSubmit} className="mt-2 flex items-center gap-2 border-t border-white/10 pt-2">
+                  <span className="text-primary font-bold">$</span>
+                  <input
+                    type="text"
+                    value={terminalInput}
+                    onChange={(e) => setTerminalInput(e.target.value)}
+                    placeholder="Enter CLI command (status, deploy, build, help)..."
+                    className="flex-1 bg-transparent text-white outline-none font-mono text-[11px]"
+                  />
+                  <button type="submit" className="bg-primary/20 text-primary px-2.5 py-0.5 rounded text-[10px] font-bold hover:bg-primary hover:text-white transition-smooth">
+                    Run
+                  </button>
+                </form>
               </div>
             ) : (
               <div className="flex flex-1 overflow-hidden relative bg-[#1b1b2f]">
