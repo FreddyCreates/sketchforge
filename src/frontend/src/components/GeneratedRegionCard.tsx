@@ -1,4 +1,5 @@
 import { CanvasSandboxStudio } from "@/components/CanvasSandboxStudio";
+import { VisualPropertyInspector } from "@/components/VisualPropertyInspector";
 import { RegionRenderer } from "@/components/RegionRenderer";
 import { useDeleteRegion, useUpdateRegion } from "@/hooks/use-canvas-data";
 import { useCanvasStore } from "@/lib/canvas-store";
@@ -6,7 +7,7 @@ import type { GeneratedRegion } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { refineHtmlAsync } from "@/lib/html-generator";
 import { createReceiptProof, fetchMcpTools, callMcpTool, type ReceiptProof, type McpTool } from "@/lib/mcp-spine";
-import { AlertTriangle, History, RefreshCw, X, Play, Sparkles, Code, Eye, Layers, Maximize2, Minimize2, Wand2, Copy, Download, ShieldCheck, Cpu, Coins, CheckCircle2, Terminal, Bot } from "lucide-react";
+import { AlertTriangle, History, RefreshCw, X, Play, Sparkles, Code, Eye, Layers, Maximize2, Minimize2, Wand2, Copy, Download, ShieldCheck, Cpu, Coins, CheckCircle2, Terminal, Bot, Sliders } from "lucide-react";
 import { useCallback, useRef, useState, useEffect } from "react";
 
 interface GeneratedRegionCardProps {
@@ -45,7 +46,7 @@ export function GeneratedRegionCard({ region }: GeneratedRegionCardProps) {
 
   // Embedded Editor state
   const [editMode, setEditMode] = useState<"preview" | "code">("preview");
-  const [activeCodeTab, setActiveCodeTab] = useState<"all" | "html" | "solidity" | "motoko" | "python" | "mcp" | "terminal" | "sandbox">("all");
+  const [activeCodeTab, setActiveCodeTab] = useState<"all" | "html" | "solidity" | "motoko" | "python" | "mcp" | "terminal" | "sandbox" | "inspect">("all");
   const [localHtml, setLocalHtml] = useState(region.generatedHtml || "");
   const [refinePrompt, setRefinePrompt] = useState("");
   const [isRefining, setIsRefining] = useState(false);
@@ -508,8 +509,8 @@ actor CanvasCanister {
                   IDE STUDIO
                 </span>
                 <div className="h-3 w-px bg-white/20" />
-                <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[360px]">
-                  {(["all", "html", "solidity", "motoko", "python", "mcp", "terminal", "sandbox"] as const).map((tab) => (
+                <div className="flex gap-1 overflow-x-auto no-scrollbar max-w-[420px]">
+                  {(["all", "html", "inspect", "solidity", "motoko", "python", "mcp", "terminal", "sandbox"] as const).map((tab) => (
                     <button
                       key={tab}
                       type="button"
@@ -565,7 +566,18 @@ actor CanvasCanister {
             </div>
 
             {/* Editor Workspace Area */}
-            {activeCodeTab === "sandbox" ? (
+            {activeCodeTab === "inspect" ? (
+              <VisualPropertyInspector
+                html={localHtml}
+                onUpdateHtml={(newHtml) => {
+                  setLocalHtml(newHtml);
+                  updateRegion.mutate({
+                    regionId: region.id,
+                    updates: { generatedHtml: newHtml },
+                  });
+                }}
+              />
+            ) : activeCodeTab === "sandbox" ? (
               <CanvasSandboxStudio regionId={region.id.toString()} />
             ) : activeCodeTab === "solidity" ? (
               <div className="flex-1 p-3 bg-[#1b1b2f] overflow-y-auto text-amber-300 font-mono text-[11px] leading-relaxed whitespace-pre">
