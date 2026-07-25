@@ -34,6 +34,7 @@ import type { Point } from "@/lib/types";
  * a single transformed <div> so pan/zoom is one CSS transform.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ZoomIn, ZoomOut, Maximize } from "lucide-react";
 
 interface LassoDraft {
   points: Point[];
@@ -44,6 +45,7 @@ export function CanvasWorkspace() {
   const activeTool = useCanvasStore((s) => s.activeTool);
   const view = useCanvasStore((s) => s.view);
   const setView = useCanvasStore((s) => s.setView);
+  const resetView = useCanvasStore((s) => s.resetView);
   const setSelectedRegion = useCanvasStore((s) => s.setSelectedRegion);
   const openPromptBox = useCanvasStore((s) => s.openPromptBox);
 
@@ -340,6 +342,39 @@ export function CanvasWorkspace() {
 
       {/* AI Chatbot Assistant panel — slide-in side drawer. */}
       <AIChatBotPanel />
+
+      {/* Floating Camera Zoom & View Controls */}
+      <div className="fixed bottom-4 left-20 z-40 flex items-center gap-1.5 rounded-full border border-dashed border-primary/30 bg-card/80 p-1.5 shadow-glow backdrop-blur-md text-xs font-mono select-none">
+        <button
+          type="button"
+          onClick={() => setView({ scale: Math.max(0.2, view.scale - 0.1) })}
+          className="flex size-7 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/20 hover:text-primary transition-smooth"
+          title="Zoom Out"
+        >
+          <ZoomOut className="size-3.5" />
+        </button>
+        <span className="min-w-[42px] text-center text-[11px] font-bold text-foreground tabular-nums">
+          {Math.round(view.scale * 100)}%
+        </span>
+        <button
+          type="button"
+          onClick={() => setView({ scale: Math.min(3, view.scale + 0.1) })}
+          className="flex size-7 items-center justify-center rounded-full text-muted-foreground hover:bg-primary/20 hover:text-primary transition-smooth"
+          title="Zoom In"
+        >
+          <ZoomIn className="size-3.5" />
+        </button>
+        <div className="h-3 w-px bg-border/80" />
+        <button
+          type="button"
+          onClick={resetView}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-sans font-semibold text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-smooth"
+          title="Reset View"
+        >
+          <Maximize className="size-3" />
+          Reset View
+        </button>
+      </div>
     </div>
   );
 }

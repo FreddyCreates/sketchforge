@@ -5,16 +5,13 @@ import { useProject, useUpdateProjectName } from "@/hooks/use-canvas-data";
 import { useCanvasStore } from "@/lib/canvas-store";
 import { cn } from "@/lib/utils";
 import { GeminiSettingsModal } from "./GeminiSettingsModal";
-/**
- * SketchForge — top app header.
- */
-import { Check, Loader2, Redo2, Undo2, X, Settings, Bot } from "lucide-react";
+import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function ThinkingIndicator() {
   return (
     <div
-      className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
+      className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary shadow-glow animate-pulse"
       aria-live="polite"
       aria-label="AI is thinking"
     >
@@ -23,7 +20,7 @@ function ThinkingIndicator() {
         <span className="size-1.5 rounded-full bg-primary animate-thinking-dot [animation-delay:160ms]" />
         <span className="size-1.5 rounded-full bg-primary animate-thinking-dot [animation-delay:320ms]" />
       </span>
-      <span>Thinking…</span>
+      <span>Generating Design…</span>
     </div>
   );
 }
@@ -39,7 +36,7 @@ function ProjectNameEditor() {
     if (editing) inputRef.current?.focus();
   }, [editing]);
 
-  const name = project?.name ?? "Untitled project";
+  const name = project?.name ?? "SketchForge Canvas Workspace";
 
   function commit() {
     const next = draft.trim();
@@ -62,26 +59,23 @@ function ProjectNameEditor() {
             if (e.key === "Enter") commit();
             if (e.key === "Escape") cancel();
           }}
-          className="h-8 w-56 rounded-full border-dashed bg-card text-sm font-display"
-          aria-label="Project name"
+          className="h-8 w-60 rounded-full border border-primary bg-card text-xs font-bold font-display"
         />
         <Button
           size="icon"
           variant="ghost"
-          className="size-8 rounded-full"
+          className="size-7 rounded-full bg-primary/10 text-primary"
           onClick={commit}
-          aria-label="Save project name"
         >
-          <Check className="size-4" />
+          <Check className="size-3.5" />
         </Button>
         <Button
           size="icon"
           variant="ghost"
-          className="size-8 rounded-full"
+          className="size-7 rounded-full text-muted-foreground hover:bg-muted"
           onClick={cancel}
-          aria-label="Cancel rename"
         >
-          <X className="size-4" />
+          <X className="size-3.5" />
         </Button>
       </div>
     );
@@ -94,14 +88,13 @@ function ProjectNameEditor() {
         setDraft(name);
         setEditing(true);
       }}
-      className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-left transition-smooth hover:bg-card"
-      title="Click to rename project"
+      className="group flex items-center gap-2 rounded-full px-3 py-1 transition-all hover:bg-card/80 border border-transparent hover:border-border"
     >
-      <span className="font-display text-base font-semibold tracking-tight text-foreground">
+      <span className="font-display text-sm font-bold tracking-tight text-foreground">
         {name}
       </span>
-      <span className="text-[10px] uppercase tracking-wider text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-        edit
+      <span className="text-[9px] font-semibold uppercase tracking-wider text-primary opacity-0 transition-opacity group-hover:opacity-100">
+        rename
       </span>
     </button>
   );
@@ -112,7 +105,6 @@ interface HeaderProps {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
-  /** The export control rendered in the header (the Export HTML pill). */
   exportButton?: React.ReactNode;
 }
 
@@ -128,83 +120,76 @@ export function Header({
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-dashed border-border/70 bg-card/60 px-4 backdrop-blur-sm">
+    <header className="flex h-14 items-center justify-between border-b border-border/80 bg-card/80 px-4 backdrop-blur-md z-40 relative">
       <div className="flex items-center gap-3">
-        {/* Logo mark */}
-        <div className="flex size-9 items-center justify-center rounded-full bg-gradient-primary font-display text-sm font-bold text-primary-foreground shadow-glow">
-          S
+        {/* Brand Logo */}
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-xl bg-gradient-primary font-display text-xs font-bold text-primary-foreground shadow-glow">
+            <Layers className="size-4" />
+          </div>
+          <span className="font-bold font-display text-sm text-foreground tracking-tight hidden sm:inline">
+            SketchForge
+          </span>
         </div>
+
+        <div className="h-4 w-px bg-border/80" />
         <ProjectNameEditor />
+
+        {/* AI Assistant Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 rounded-full border border-dashed border-primary/60 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all flex items-center gap-1.5 px-3 text-xs font-semibold shadow-sm"
+          onClick={toggleAIChat}
+          title="Open AI Assistant"
+        >
+          <Bot className="size-3.5" />
+          <span>AI Assistant</span>
+          <Sparkles className="size-3 text-amber-400" />
+        </Button>
+
         <Button
           variant="ghost"
           size="icon"
           className="size-8 rounded-full border border-dashed border-border/70 hover:border-primary/50 text-muted-foreground hover:text-primary transition-smooth"
           onClick={() => setSettingsOpen(true)}
           title="Gemini AI Settings"
-          aria-label="Gemini AI Settings"
         >
-          <Settings className="size-4" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 rounded-full border border-dashed border-primary/60 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-smooth flex items-center gap-1.5 px-3 text-xs font-semibold"
-          onClick={toggleAIChat}
-          title="Open AI Assistant"
-        >
-          <Bot className="size-3.5" />
-          AI Assistant
+          <Settings className="size-3.5" />
         </Button>
       </div>
 
       <div className="flex items-center gap-3">
         {isGenerating && <ThinkingIndicator />}
 
-        {/* Presence roster placeholder — avatar chips container */}
+        {/* Collaborators presence */}
         <PresenceRoster />
 
-        <div className="flex items-center gap-1.5 rounded-full border border-dashed border-border/70 bg-card p-1">
+        {/* Undo / Redo controls */}
+        <div className="flex items-center gap-1 rounded-full border border-dashed border-border/80 bg-card/60 p-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={onUndo}
             disabled={!canUndo}
-            className={cn(
-              "h-8 rounded-full px-3 text-xs font-medium",
-              "disabled:opacity-40",
-            )}
-            aria-label="Undo"
-            title="Undo"
-            data-ocid="header.undo_button"
+            className="h-7 rounded-full px-2.5 text-xs font-medium disabled:opacity-40"
+            title="Undo stroke"
           >
-            <Undo2 className="size-4" />
-            <span className="hidden sm:inline">Undo</span>
+            <Undo2 className="size-3.5" />
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={onRedo}
             disabled={!canRedo}
-            className={cn(
-              "h-8 rounded-full px-3 text-xs font-medium",
-              "disabled:opacity-40",
-            )}
-            aria-label="Redo"
-            title="Redo"
-            data-ocid="header.redo_button"
+            className="h-7 rounded-full px-2.5 text-xs font-medium disabled:opacity-40"
+            title="Redo stroke"
           >
-            <Redo2 className="size-4" />
-            <span className="hidden sm:inline">Redo</span>
+            <Redo2 className="size-3.5" />
           </Button>
         </div>
 
-        {/* Export HTML — standalone HTML export (no React/JSX per scope) */}
         {exportButton}
-
-        {isGenerating && (
-          <Loader2 className="size-4 animate-spin text-primary" aria-hidden />
-        )}
       </div>
 
       <GeminiSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
