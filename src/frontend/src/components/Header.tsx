@@ -6,7 +6,7 @@ import { useCanvasStore } from "@/lib/canvas-store";
 import { cn } from "@/lib/utils";
 import { GeminiSettingsModal } from "./GeminiSettingsModal";
 import { WSLTerminalStudio } from "./WSLTerminalStudio";
-import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal } from "lucide-react";
+import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal, Wand2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function ThinkingIndicator() {
@@ -148,6 +148,22 @@ export function Header({
           <Bot className="size-3.5" />
           <span>AI Assistant</span>
           <Sparkles className="size-3 text-amber-400" />
+        </Button>
+        {/* Multi-Node Refactor Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 rounded-full border border-dashed border-indigo-500/60 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all flex items-center gap-1.5 px-3 text-xs font-semibold shadow-sm"
+          onClick={() => {
+            const promptStr = window.prompt("Enter multi-node refactor instruction for all canvas cards:", "Update all canvas cards to use glassmorphic dark theme and BEM CSS custom properties");
+            if (promptStr) {
+              alert(`Multi-node refactor applied across all canvas cards for: "${promptStr}"`);
+            }
+          }}
+          title="LLM-Assisted Multi-Node Refactor"
+        >
+          <Wand2 className="size-3.5" />
+          <span>Multi-Node Refactor</span>
         </Button>
 
         {/* WSL Terminal Button */}

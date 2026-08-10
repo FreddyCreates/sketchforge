@@ -1,3 +1,4 @@
+import { calculateBezierConnectorPath } from "@/lib/pipeline-connectors";
 import { AIChatBotPanel } from "@/components/AIChatBotPanel";
 import { CommentPanel } from "@/components/CommentPanel";
 import { CommentPin } from "@/components/CommentPin";
@@ -296,6 +297,33 @@ export function CanvasWorkspace() {
                 );
               })}
             </g>
+          </svg>
+        )}
+
+        {/* Visual Pipeline Architecture Connectors Layer */}
+        {regions && regions.length > 1 && (
+          <svg className="pointer-events-none absolute inset-0 size-full overflow-visible">
+            {regions.slice(0, -1).map((r, idx) => {
+              const nextRegion = regions[idx + 1];
+              if (!nextRegion) return null;
+              const { path, labelX, labelY } = calculateBezierConnectorPath(
+                { x: r.x, y: r.y, width: r.width, height: r.height },
+                { x: nextRegion.x, y: nextRegion.y, width: nextRegion.width, height: nextRegion.height }
+              );
+              return (
+                <g key={`conn-${r.id}-${nextRegion.id}`}>
+                  <path
+                    d={path}
+                    fill="none"
+                    stroke="#6d28d9"
+                    strokeWidth="2.5"
+                    strokeDasharray="6 4"
+                    className="animate-pulse"
+                  />
+                  <circle cx={labelX} cy={labelY} r="4" fill="#6d28d9" />
+                </g>
+              );
+            })}
           </svg>
         )}
 

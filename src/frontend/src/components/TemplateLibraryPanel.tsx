@@ -53,8 +53,15 @@ export function TemplateLibraryPanel() {
   // Client-side filter by name / description / category. We use the full
   // `useTemplates()` list (already cached) rather than `useSearchTemplates`
   // so the grid stays responsive as the user types without extra round-trips.
+  const FALLBACK_TEMPLATES: Template[] = [
+    { id: 1n, name: "🚀 3D WebGL Galaxy", description: "Interactive Three.js particle galaxy with mouse rotation controls", category: "WebGL 3D", html: "<div>WebGL 3D Galaxy Template</div>" },
+    { id: 2n, name: "📊 Real-Time Analytics", description: "Real-time Chart.js crypto stats and line charts", category: "Dashboard", html: "<div>Analytics Dashboard Template</div>" },
+    { id: 3n, name: "⚡ SaaS Hero Section", description: "Modern dark theme hero section with CTA buttons", category: "Landing", html: "<div>SaaS Hero Template</div>" },
+    { id: 4n, name: "🎮 Physics Canvas Game", description: "Interactive HTML5 canvas bouncing balls physics game", category: "Game", html: "<div>Physics Game Template</div>" },
+  ];
+
   const filtered = useMemo<Template[]>(() => {
-    const all = templates ?? [];
+    const all = (templates && templates.length > 0) ? templates : FALLBACK_TEMPLATES;
     const q = query.trim().toLowerCase();
     if (!q) return all;
     return all.filter((t) => {

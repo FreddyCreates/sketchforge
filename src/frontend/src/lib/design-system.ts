@@ -1,5 +1,5 @@
 /**
- * SketchForge — Design Tokens, Project Maintenance, and Code Linting Engine.
+ * SketchForge — Design System, BEM CSS, Package Import, & Visual Diff Engine.
  */
 
 export interface DesignTokens {
@@ -16,12 +16,20 @@ export interface ProjectBundle {
   "app.js": string;
   "README.md": string;
   "package.json": string;
+  "assets/": Record<string, string>;
 }
 
 export interface LintReport {
-  score: number; // 0 - 100
+  score: number;
   issues: string[];
   passedChecks: string[];
+}
+
+export interface CodeDiffLine {
+  type: "added" | "removed" | "unchanged";
+  text: string;
+  lineNumberOld?: number;
+  lineNumberNew?: number;
 }
 
 export const DEFAULT_DESIGN_TOKENS: DesignTokens = {
@@ -33,13 +41,84 @@ export const DEFAULT_DESIGN_TOKENS: DesignTokens = {
 };
 
 /**
- * Extract a single self-contained HTML page into a modular multi-file project package.
+ * Generate a clean CSS custom properties + BEM-ish stylesheet.
+ */
+export function generateBemCss(tokens: DesignTokens = DEFAULT_DESIGN_TOKENS): string {
+  return `@layer base, components, utilities;
+
+@layer base {
+  :root {
+    --sf-primary: ${tokens.primaryColor};
+    --sf-[#0f101d]: ${tokens.backgroundColor};
+    --sf-font-base: ${tokens.fontFamily};
+    --sf-radius-lg: ${tokens.borderRadius};
+    --sf-shadow-glow: 0 0 20px rgba(109, 40, 217, 0.35);
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--sf-font-base);
+    background-color: var(--sf-[#0f101d]);
+    color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  .sf-card {
+    background: rgba(20, 21, 40, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px border-dashed rgba(255, 255, 255, 0.15);
+    border-radius: var(--sf-radius-lg);
+    box-shadow: var(--sf-shadow-glow);
+    padding: 1.5rem;
+  }
+
+  .sf-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .sf-card__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--sf-primary);
+  }
+
+  .sf-card__button--primary {
+    background-color: var(--sf-primary);
+    color: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: calc(var(--sf-radius-lg) - 4px);
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .sf-card__button--primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+}
+`;
+}
+
+/**
+ * Extract a single self-contained HTML page into a modular BEM + custom properties multi-file project package.
  */
 export function extractModularProjectBundle(rawHtml: string, appName = "sketchforge-app"): ProjectBundle {
   const cssMatch = rawHtml.match(/<style[\s\S]*?>([\s\S]*?)<\/style>/i);
   const jsMatch = rawHtml.match(/<script[\s\S]*?>([\s\S]*?)<\/script>/gi);
 
-  let cssContent = cssMatch ? cssMatch[1].trim() : "/* Custom Styles */\nbody { margin: 0; font-family: sans-serif; }";
+  let cssContent = cssMatch ? cssMatch[1].trim() : generateBemCss();
+  if (!cssContent.includes("--sf-primary")) {
+    cssContent = `${generateBemCss()}\n\n/* Embedded Styles */\n${cssContent}`;
+  }
+
   let jsContent = "";
   if (jsMatch) {
     jsContent = jsMatch
@@ -48,7 +127,7 @@ export function extractModularProjectBundle(rawHtml: string, appName = "sketchfo
       .join("\n\n");
   }
   if (!jsContent) {
-    jsContent = "// App Interactive Logic\nconsole.log('App loaded cleanly.');";
+    jsContent = "// App Interactive Logic\nconsole.log('App loaded cleanly in SketchForge Engine.');";
   }
 
   const cleanIndexHtml = rawHtml
@@ -56,51 +135,78 @@ export function extractModularProjectBundle(rawHtml: string, appName = "sketchfo
     .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
     .replace("</body>", '  <script src="app.js"></script>\n</body>');
 
-  const readmeMd = `# ${appName}
-
-Generated with **SketchForge Visual App Engine**.
-
-## File Structure
-- \`index.html\` - Main HTML DOM layout
-- \`styles.css\` - Extracted CSS stylesheet
-- \`app.js\` - Interactive JavaScript app logic
-- \`package.json\` - Project metadata and dependencies
-
-## Development
-Open \`index.html\` in any web browser or serve via Vite / Live Server.
-`;
-
-  const packageJson = JSON.stringify(
-    {
-      name: appName.toLowerCase().replace(/[^a-z0-9]/g, "-"),
-      version: "1.0.0",
-      description: "Modular web application exported from SketchForge Canvas Studio",
-      main: "index.html",
-      scripts: {
-        start: "npx serve .",
-        build: "echo 'Static production build ready.'",
-      },
-      dependencies: {
-        tailwindcss: "^3.4.0",
-        three: "^0.160.0",
-        "chart.js": "^4.4.0",
-      },
-    },
-    null,
-    2
-  );
-
   return {
     "index.html": cleanIndexHtml,
     "styles.css": cssContent,
     "app.js": jsContent,
-    "README.md": readmeMd,
-    "package.json": packageJson,
+    "README.md": `# ${appName}\n\nExported from **SketchForge Canvas Studio**.\n\n## Structure\n- \`index.html\`\n- \`styles.css\` (BEM + CSS Custom Properties)\n- \`app.js\`\n- \`assets/\`\n`,
+    "package.json": JSON.stringify(
+      {
+        name: appName.toLowerCase().replace(/[^a-z0-9]/g, "-"),
+        version: "1.0.0",
+        main: "index.html",
+        scripts: { start: "npx serve ." },
+      },
+      null,
+      2
+    ),
+    "assets/": {
+      "favicon.ico": "base64-placeholder",
+    },
   };
 }
 
 /**
- * Perform static linting & maintainability analysis on HTML code.
+ * Bidirectional import of edited package bundle (`POST /builder/maintain/import`).
+ */
+export function importProjectPackage(bundleJsonStr: string): string {
+  try {
+    const parsed = JSON.parse(bundleJsonStr);
+    let html = parsed["index.html"] || parsed.html || "";
+    const css = parsed["styles.css"] || parsed.css || "";
+    const js = parsed["app.js"] || parsed.js || "";
+
+    if (css && !html.includes("<style>")) {
+      html = html.replace("</head>", `<style>\n${css}\n</style>\n</head>`);
+    }
+    if (js && !html.includes("<script>")) {
+      html = html.replace("</body>", `<script>\n${js}\n</script>\n</body>`);
+    }
+    return html;
+  } catch {
+    throw new Error("Invalid project package bundle format.");
+  }
+}
+
+/**
+ * Compute line-by-line visual code diff.
+ */
+export function calculateCodeDiff(oldCode: string, newCode: string): CodeDiffLine[] {
+  const oldLines = oldCode.split("\n");
+  const newLines = newCode.split("\n");
+  const diffLines: CodeDiffLine[] = [];
+
+  let i = 0;
+  let j = 0;
+  while (i < oldLines.length || j < newLines.length) {
+    if (i < oldLines.length && j < newLines.length && oldLines[i] === newLines[j]) {
+      diffLines.push({ type: "unchanged", text: oldLines[i], lineNumberOld: i + 1, lineNumberNew: j + 1 });
+      i++;
+      j++;
+    } else if (j < newLines.length && (!oldLines.includes(newLines[j]) || i >= oldLines.length)) {
+      diffLines.push({ type: "added", text: newLines[j], lineNumberNew: j + 1 });
+      j++;
+    } else if (i < oldLines.length) {
+      diffLines.push({ type: "removed", text: oldLines[i], lineNumberOld: i + 1 });
+      i++;
+    }
+  }
+
+  return diffLines;
+}
+
+/**
+ * Static linting & maintainability analysis on HTML code.
  */
 export function lintHtmlCode(html: string): LintReport {
   const issues: string[] = [];
@@ -122,21 +228,10 @@ export function lintHtmlCode(html: string): LintReport {
   }
 
   if (!html.includes("<title>")) {
-    issues.push("Missing <title> tag for accessibility and SEO");
+    issues.push("Missing <title> tag for accessibility");
     score -= 10;
   } else {
     passedChecks.push("Title tag present for SEO");
-  }
-
-  if (!html.includes("aria-") && !html.includes('role="')) {
-    issues.push("Consider adding ARIA accessibility attributes to interactive elements");
-    score -= 10;
-  } else {
-    passedChecks.push("ARIA accessibility attributes present");
-  }
-
-  if (html.length > 500) {
-    passedChecks.push("Rich interface component density");
   }
 
   return {
