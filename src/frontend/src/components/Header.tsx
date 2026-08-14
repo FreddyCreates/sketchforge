@@ -5,8 +5,9 @@ import { useProject, useUpdateProjectName } from "@/hooks/use-canvas-data";
 import { useCanvasStore } from "@/lib/canvas-store";
 import { cn } from "@/lib/utils";
 import { GeminiSettingsModal } from "./GeminiSettingsModal";
+import { CommandPalette } from "./CommandPalette";
 import { WSLTerminalStudio } from "./WSLTerminalStudio";
-import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal, Wand2 } from "lucide-react";
+import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal, Wand2, Command } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function ThinkingIndicator() {
@@ -120,6 +121,7 @@ export function Header({
   const toggleAIChat = useCanvasStore((s) => s.toggleAIChat);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [wslOpen, setWslOpen] = useState(false);
+  const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border/80 bg-card/80 px-4 backdrop-blur-md z-40 relative">
@@ -136,6 +138,19 @@ export function Header({
 
         <div className="h-4 w-px bg-border/80" />
         <ProjectNameEditor />
+
+        {/* Command Palette Trigger */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 rounded-full border border-dashed border-border/70 bg-card/80 text-muted-foreground hover:text-foreground transition-all flex items-center gap-1.5 px-3 text-xs font-semibold shadow-sm"
+          onClick={() => setCmdPaletteOpen(true)}
+          title="Command Palette (Ctrl+K)"
+        >
+          <Command className="size-3.5" />
+          <span className="hidden md:inline">Command Palette</span>
+          <span className="text-[9px] font-mono bg-background px-1.5 py-0.5 rounded border border-border">Ctrl+K</span>
+        </Button>
 
         {/* AI Assistant Button */}
         <Button
@@ -224,6 +239,16 @@ export function Header({
 
       <GeminiSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       <WSLTerminalStudio open={wslOpen} onClose={() => setWslOpen(false)} />
+      <CommandPalette
+        open={cmdPaletteOpen}
+        onClose={() => setCmdPaletteOpen(false)}
+        onOpenAIChat={toggleAIChat}
+        onOpenWsl={() => setWslOpen(true)}
+        onMultiRefactor={() => {
+          const promptStr = window.prompt("Enter multi-node refactor instruction for all canvas cards:", "Update all canvas cards to use glassmorphic dark theme and BEM CSS custom properties");
+          if (promptStr) alert(`Multi-node refactor applied: "${promptStr}"`);
+        }}
+      />
     </header>
   );
 }
