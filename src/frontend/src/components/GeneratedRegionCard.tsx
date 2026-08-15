@@ -1,3 +1,4 @@
+import { executeRealPythonWasm, compileRealSolidity, executeRealHostCommand } from "@/lib/real-executors";
 import { CanvasSandboxStudio } from "@/components/CanvasSandboxStudio";
 import { VisualPropertyInspector } from "@/components/VisualPropertyInspector";
 import { RegionRenderer } from "@/components/RegionRenderer";
@@ -89,33 +90,23 @@ print("Pi calculation:", math.pi)
   ]);
   const [terminalInput, setTerminalInput] = useState("");
 
-  function handleTerminalSubmit(e: React.FormEvent) {
+  async function handleTerminalSubmit(e: React.FormEvent) {
     e.preventDefault();
     const cmd = terminalInput.trim();
     if (!cmd) return;
     setTerminalLogs((prev) => [...prev, `$ ${cmd}`]);
     setTerminalInput("");
 
-    if (cmd === "help") {
-      setTerminalLogs((prev) => [
-        ...prev,
-        "Available commands:",
-        "  status  - Show canvas canister & WebGL runtime health",
-        "  deploy  - Deploy region code to ICP canister",
-        "  build   - Run Vite production bundle simulation",
-        "  clear   - Clear terminal output console",
-      ]);
-    } else if (cmd === "status") {
-      setTerminalLogs((prev) => [
-        ...prev,
-        "[OK] Canister ID: rdmx6-jaaaa-aaaaa-aaadq-cai",
-        "[OK] WebGL Context: ACTIVE",
-        "[OK] AI Engine: gemini-2.5-flash / gemini-2.5-pro",
-      ]);
-    } else if (cmd === "clear") {
+    if (cmd === "clear") {
       setTerminalLogs([]);
+      return;
+    }
+
+    const res = await executeRealHostCommand(cmd);
+    if (res.success) {
+      setTerminalLogs((prev) => [...prev, res.output]);
     } else {
-      setTerminalLogs((prev) => [...prev, `Executed command: ${cmd}`]);
+      setTerminalLogs((prev) => [...prev, res.error || res.output]);
     }
   }
 
@@ -148,16 +139,12 @@ print("Pi calculation:", math.pi)
     }
   }
 
-  function runPythonCode() {
+  async function runPythonCode() {
     setIsPythonRunning(true);
-    setPythonOutput("Initializing Pyodide Python WASM Kernel...");
-    setTimeout(() => {
-      setPythonOutput(`=== Python 3.11 WASM Execution Result ===
-Fibonacci Sequence (first 10 terms): [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]
-Pi calculation: 3.141592653589793
-Execution completed cleanly in 4.2ms (Pyodide v86 WASM engine).`);
-      setIsPythonRunning(false);
-    }, 600);
+    setPythonOutput("Loading & evaluating Pyodide Python WASM kernel...");
+    const res = await executeRealPythonWasm(pythonCode);
+    setPythonOutput(res.output);
+    setIsPythonRunning(false);
   }
 
   // ReceiptChain Proof & NFT State
