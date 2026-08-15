@@ -1,5 +1,5 @@
 /**
- * SketchForge — Design System, BEM CSS, Package Import, & Visual Diff Engine.
+ * SketchForge — Design System, BEM CSS, Package Export, & Visual Diff Engine.
  */
 
 export interface DesignTokens {
@@ -39,6 +39,16 @@ export const DEFAULT_DESIGN_TOKENS: DesignTokens = {
   borderRadius: "12px",
   themeMode: "dark",
 };
+
+/**
+ * Convert raw vector strokes into structural wireframe layout hints for Gemini.
+ */
+export function convertStrokesToLayoutPrompt(strokesCount: number): string {
+  if (strokesCount === 0) return "Clean digital app card";
+  if (strokesCount < 5) return "Simple card layout with headline and CTA button";
+  if (strokesCount < 15) return "Structured dashboard grid with navigation sidebar, hero card, and data chart";
+  return "Complex multi-region WebGL 3D application canvas with sidebar dock and interactive panels";
+}
 
 /**
  * Generate a clean CSS custom properties + BEM-ish stylesheet.
