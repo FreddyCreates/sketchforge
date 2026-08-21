@@ -5,9 +5,10 @@ import { useProject, useUpdateProjectName } from "@/hooks/use-canvas-data";
 import { useCanvasStore } from "@/lib/canvas-store";
 import { cn } from "@/lib/utils";
 import { GeminiSettingsModal } from "./GeminiSettingsModal";
+import { WorkflowStudioModal } from "./WorkflowStudioModal";
 import { CommandPalette } from "./CommandPalette";
 import { WSLTerminalStudio } from "./WSLTerminalStudio";
-import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal, Wand2, Command } from "lucide-react";
+import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal, Wand2, Command, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function ThinkingIndicator() {
@@ -122,6 +123,7 @@ export function Header({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [wslOpen, setWslOpen] = useState(false);
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
+  const [workflowStudioOpen, setWorkflowStudioOpen] = useState(false);
   const [bridgeOnline, setBridgeOnline] = useState(false);
 
   useEffect(() => {
@@ -178,6 +180,18 @@ export function Header({
           <Bot className="size-3.5" />
           <span>AI Assistant</span>
           <Sparkles className="size-3 text-amber-400" />
+        </Button>
+
+        {/* Workflows Studio Button */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 rounded-full border border-dashed border-amber-500/60 bg-amber-500/10 text-amber-400 hover:bg-amber-500 hover:text-slate-950 transition-all flex items-center gap-1.5 px-3 text-xs font-semibold shadow-sm"
+          onClick={() => setWorkflowStudioOpen(true)}
+          title="Open Workflows Catalog Studio"
+        >
+          <Play className="size-3.5" />
+          <span>Workflows</span>
         </Button>
         {/* Multi-Node Refactor Button */}
         <Button
@@ -266,6 +280,7 @@ export function Header({
 
       <GeminiSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
       <WSLTerminalStudio open={wslOpen} onClose={() => setWslOpen(false)} />
+      <WorkflowStudioModal open={workflowStudioOpen} onClose={() => setWorkflowStudioOpen(false)} />
       <CommandPalette
         open={cmdPaletteOpen}
         onClose={() => setCmdPaletteOpen(false)}
