@@ -1,3 +1,4 @@
+import { SaasWorkspaceView } from "@/components/SaaSWorkspaceView";
 import { CanvasWorkspace } from "@/components/CanvasWorkspace";
 /**
  * SketchForge — app layout shell.
@@ -87,7 +88,7 @@ export function Layout({ exportButton }: LayoutProps = {}) {
     );
   }
 
-  // Clear redo stack when switching tabs (handled in store.setActiveTab).
+  const saasViewOpen = useCanvasStore((s) => s.saasViewOpen);
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
@@ -102,14 +103,13 @@ export function Layout({ exportButton }: LayoutProps = {}) {
       <div className="flex flex-1 overflow-hidden">
         <Toolbar />
         <main className="relative flex-1 overflow-hidden bg-paper">
-          {/* Canvas mount point — a later page task renders the actual
-              drawing surface, comments, regions, and prompt box here. */}
+          {/* Canvas mount point — renders CanvasWorkspace or SaaS Workspace Hub View */}
           <div
             id="canvas-mount"
-            className="absolute inset-0"
+            className="absolute inset-0 flex flex-col"
             data-active-tab={activeTabId?.toString() ?? "none"}
           >
-            <CanvasWorkspace />
+            {saasViewOpen ? <SaasWorkspaceView /> : <CanvasWorkspace />}
           </div>
         </main>
       </div>

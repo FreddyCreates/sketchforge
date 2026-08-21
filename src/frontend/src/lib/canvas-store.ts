@@ -60,6 +60,10 @@ export interface CanvasState {
   openAIChat: () => void;
   closeAIChat: () => void;
 
+  // --- SaaS Workspace Hub View ---
+  saasViewOpen: boolean;
+  toggleSaasView: () => void;
+
   // --- Actions ---
   setTool: (tool: CanvasTool) => void;
   setColor: (color: string) => void;
@@ -122,10 +126,12 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   versionHistoryRegionId: null,
   myPresenceColor: MY_PRESENCE_COLOR,
   aiChatOpen: false,
+  saasViewOpen: false,
 
   toggleAIChat: () => set((s) => ({ aiChatOpen: !s.aiChatOpen })),
   openAIChat: () => set({ aiChatOpen: true }),
   closeAIChat: () => set({ aiChatOpen: false }),
+  toggleSaasView: () => set((s) => ({ saasViewOpen: !s.saasViewOpen })),
 
   setTool: (tool) => set({ activeTool: tool }),
   setColor: (color) => set({ activeColor: color }),

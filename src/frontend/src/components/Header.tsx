@@ -8,7 +8,7 @@ import { GeminiSettingsModal } from "./GeminiSettingsModal";
 import { WorkflowStudioModal } from "./WorkflowStudioModal";
 import { CommandPalette } from "./CommandPalette";
 import { WSLTerminalStudio } from "./WSLTerminalStudio";
-import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal, Wand2, Command, Play } from "lucide-react";
+import { Check, Redo2, Undo2, X, Settings, Bot, Sparkles, Layers, Terminal, Wand2, Command, Play, Zap } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function ThinkingIndicator() {
@@ -120,6 +120,9 @@ export function Header({
 }: HeaderProps) {
   const isGenerating = useCanvasStore((s) => s.isGenerating);
   const toggleAIChat = useCanvasStore((s) => s.toggleAIChat);
+  const saasViewOpen = useCanvasStore((s) => s.saasViewOpen);
+  const toggleSaasView = useCanvasStore((s) => s.toggleSaasView);
+
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [wslOpen, setWslOpen] = useState(false);
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
@@ -155,6 +158,21 @@ export function Header({
 
         <div className="h-4 w-px bg-border/80" />
         <ProjectNameEditor />
+
+        {/* SaaS Hub Mode Switcher */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className={cn(
+            "h-8 rounded-full border border-dashed transition-all flex items-center gap-1.5 px-3 text-xs font-semibold shadow-sm",
+            saasViewOpen ? "bg-amber-500 text-slate-950 border-amber-400 font-bold" : "bg-primary/10 text-primary border-primary/40 hover:bg-primary hover:text-white"
+          )}
+          onClick={toggleSaasView}
+          title="Toggle SaaS Platform Hub View"
+        >
+          <Zap className="size-3.5" />
+          <span>{saasViewOpen ? "Canvas Studio" : "SaaS Hub"}</span>
+        </Button>
 
         {/* Command Palette Trigger */}
         <Button
