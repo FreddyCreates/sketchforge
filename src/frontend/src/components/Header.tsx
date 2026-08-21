@@ -122,6 +122,21 @@ export function Header({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [wslOpen, setWslOpen] = useState(false);
   const [cmdPaletteOpen, setCmdPaletteOpen] = useState(false);
+  const [bridgeOnline, setBridgeOnline] = useState(false);
+
+  useEffect(() => {
+    async function checkBridge() {
+      try {
+        const res = await fetch("http://127.0.0.1:8080/health");
+        setBridgeOnline(res.ok);
+      } catch {
+        setBridgeOnline(false);
+      }
+    }
+    checkBridge();
+    const interval = setInterval(checkBridge, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-border/80 bg-card/80 px-4 backdrop-blur-md z-40 relative">
@@ -192,6 +207,18 @@ export function Header({
           <Terminal className="size-3.5" />
           <span>WSL Terminal</span>
         </Button>
+
+        {/* Bridge Server Status Badge */}
+        <div
+          className={cn(
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold border transition-all",
+            bridgeOnline ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-white/5 border-white/10 text-white/40"
+          )}
+          title={bridgeOnline ? "Local Node.js Process Bridge Server active on 127.0.0.1:8080" : "Bridge Server offline (launch 'node server/bridge-server.cjs')"}
+        >
+          <span className={cn("size-2 rounded-full", bridgeOnline ? "bg-emerald-400 animate-pulse" : "bg-white/30")} />
+          <span>{bridgeOnline ? "Bridge 8080" : "Bridge Off"}</span>
+        </div>
 
         <Button
           variant="ghost"
